@@ -73,7 +73,6 @@ class _LoginViewState extends State<LoginView>
 
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      // setState(() => _isLoading = true);
 
       var authProvider = getIt<AuthProvider>();
 

@@ -5,12 +5,4 @@ import '../../../core/errors/failures.dart';
 import '../../entities/task.dart';
 import '../../repositories/task_repository.dart';
 
-class UpdateTask {
-  final TaskRepository repository;
-
-  UpdateTask(this.repository);
-
-  Future<Either<Failure, Task>> call(UpdateTaskData updateTaskData, int id) async {
-    return await repository.updateTask(updateTaskData, id);
-  }
-}
+class UpdateTask {}

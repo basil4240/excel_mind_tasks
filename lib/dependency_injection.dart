@@ -1,4 +1,3 @@
-// dependency_injection.dart
 import 'package:excel_mind_tasks/presentation/providers/theme_provider.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
@@ -27,7 +26,6 @@ import 'domain/repositories/auth_repository.dart';
 
 import 'domain/usecases/authenticate_user.dart';
 import 'presentation/providers/auth_provider.dart';
-// import 'presentation/providers/todo_provider.dart';
 
 final getIt = GetIt.instance;
 

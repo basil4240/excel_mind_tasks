@@ -1,4 +1,5 @@
 import 'package:excel_mind_tasks/core/errors/exceptions.dart';
+import 'package:excel_mind_tasks/presentation/views/auth/login_view.dart';
 import 'package:excel_mind_tasks/presentation/views/main_view.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/services/dialog_service.dart';
@@ -84,7 +85,7 @@ class AuthProvider extends ChangeNotifier {
     _isAuthenticated = false;
     await storageService.clear();
     dialogService.showSnackBar('Logged out successfully');
-    navigationService.navigateToAndClearStack('/login');
+    navigationService.navigateToPageAndClearStack(LoginView());
     notifyListeners();
   }
 

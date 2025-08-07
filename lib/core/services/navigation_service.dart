@@ -15,6 +15,13 @@ class NavigationService {
     );
   }
 
+  Future<dynamic> navigateToPageAndClearStack(Widget page) {
+    return navigatorKey.currentState!.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => page),
+    (route) => false,
+    );
+  }
+
   Future<dynamic> navigateToPage(Widget page) {
     return navigatorKey.currentState!.push(
       MaterialPageRoute(builder: (context) => page),

@@ -28,7 +28,7 @@ class _EditProfileViewState extends State<EditProfileView> {
   void _loadUserData() {
     _nameController.text = 'John Doe';
     _emailController.text = 'john.doe@example.com';
-    _phoneController.text = '+1 234 567 8900';
+    _phoneController.text = '+2348056789005';
     _bioController.text = 'Product manager passionate about productivity.';
   }
 
