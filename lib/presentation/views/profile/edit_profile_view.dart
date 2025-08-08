@@ -1,6 +1,11 @@
+import 'package:excel_mind_tasks/data/models/user_persisting_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/services/dialog_service.dart';
+import '../../../core/services/navigation_service.dart';
+import '../../../dependency_injection.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/styles/app_input_decorations.dart';
 import '../../theme/styles/app_text_styles.dart';
@@ -26,10 +31,10 @@ class _EditProfileViewState extends State<EditProfileView> {
   }
 
   void _loadUserData() {
-    _nameController.text = 'John Doe';
-    _emailController.text = 'john.doe@example.com';
-    _phoneController.text = '+2348056789005';
-    _bioController.text = 'Product manager passionate about productivity.';
+    _nameController.text = getIt<AuthProvider>().userPersistingModel?.name ?? '';
+    _emailController.text = getIt<AuthProvider>().userPersistingModel?.email ?? '';
+    _phoneController.text = getIt<AuthProvider>().userPersistingModel?.phone ?? '';
+    _bioController.text = getIt<AuthProvider>().userPersistingModel?.bio ?? '';
   }
 
   @override
@@ -49,8 +54,34 @@ class _EditProfileViewState extends State<EditProfileView> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // TODO: Save profile changes
+            onPressed: () async {
+
+              var response = await getIt<DialogService>()
+                  .showConfirmationDialog(
+                'Update Profile',
+                'Are you sure that you want to update this profile?',
+              );
+
+              if (response != null && response) {
+                // perform update
+                await getIt<AuthProvider>().updateUser(
+                  UserPersistingModel(
+                      id: getIt<AuthProvider>().userPersistingModel?.id ?? '',
+                      email: _emailController.text,
+                      name: _nameController.text,
+                      password: getIt<AuthProvider>().userPersistingModel?.password ?? '',
+                      phone: _phoneController.text,
+                      bio: _bioController.text,
+                      isDark: getIt<AuthProvider>().userPersistingModel?.isDark ?? false
+                  )
+                );
+
+                getIt<NavigationService>().goBack();
+                getIt<DialogService>().showSnackBar(
+                  'Profile Updated Successfully',
+                );
+              }
+
             },
             child: Text(
               'Save',

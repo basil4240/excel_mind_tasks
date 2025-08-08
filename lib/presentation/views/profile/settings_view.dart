@@ -2,8 +2,9 @@ import 'package:excel_mind_tasks/dependency_injection.dart';
 import 'package:excel_mind_tasks/presentation/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
 
+import '../../../data/models/user_persisting_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/styles/app_box_shadows.dart';
 import '../../theme/styles/app_text_styles.dart';
@@ -19,7 +20,7 @@ class _SettingsViewState extends State<SettingsView> {
   bool _emailNotifications = false;
   bool _taskReminders = true;
   bool _projectUpdates = true;
-  bool _darkMode = false;
+  bool _darkMode = getIt<AuthProvider>().userPersistingModel?.isDark ?? false;
   final String _selectedLanguage = 'English';
 
   @override
@@ -53,10 +54,24 @@ class _SettingsViewState extends State<SettingsView> {
                   'Switch between light and dark theme',
                   Icons.dark_mode_outlined,
                   _darkMode,
-                      (value) {
-                    setState(() {
-                      _darkMode = value;
-                    });
+                      (value) async {
+
+                        setState(() {
+                          _darkMode = value;
+                        });
+
+                    // save the state
+                        await getIt<AuthProvider>().updateUser(
+                            UserPersistingModel(
+                                id: getIt<AuthProvider>().userPersistingModel?.id ?? '',
+                                email: getIt<AuthProvider>().userPersistingModel?.email ?? '',
+                                name: getIt<AuthProvider>().userPersistingModel?.name ?? '',
+                                password: getIt<AuthProvider>().userPersistingModel?.password ?? '' ?? '',
+                                phone: getIt<AuthProvider>().userPersistingModel?.phone ?? '',
+                                bio: getIt<AuthProvider>().userPersistingModel?.bio ?? '',
+                                isDark: _darkMode
+                            )
+                        );
 
                     getIt<ThemeProvider>().toggleDarkThemeMode(_darkMode);
                   },

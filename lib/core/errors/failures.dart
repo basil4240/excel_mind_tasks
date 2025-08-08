@@ -1,8 +1,14 @@
-import 'package:dartz/dartz.dart';
-
 abstract class Failure {
   final String message;
-  Failure(this.message);
+  const Failure(this.message);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is Failure && runtimeType == other.runtimeType && message == other.message;
+
+  @override
+  int get hashCode => message.hashCode;
 }
 
 class ServerFailure extends Failure {
@@ -19,4 +25,8 @@ class NetworkFailure extends Failure {
 
 class ValidationFailure extends Failure {
   ValidationFailure(super.message);
+}
+
+class DatabaseFailure extends Failure {
+  const DatabaseFailure(super.message);
 }

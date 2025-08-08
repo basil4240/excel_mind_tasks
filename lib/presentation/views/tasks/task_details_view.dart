@@ -1,17 +1,24 @@
+import 'package:excel_mind_tasks/core/enums/priority.dart';
+import 'package:excel_mind_tasks/core/enums/task_status.dart';
+import 'package:excel_mind_tasks/presentation/providers/task_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
+import '../../../core/services/dialog_service.dart';
 import '../../../core/services/navigation_service.dart';
 import '../../../dependency_injection.dart';
+import '../../../domain/entities/task.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/styles/app_box_shadows.dart';
 import '../../theme/styles/app_text_styles.dart';
 import 'edit_task_view.dart';
 
 class TaskDetailsView extends StatelessWidget {
-  final String taskId;
+  final Task task;
 
-  const TaskDetailsView({super.key, required this.taskId});
+  const TaskDetailsView({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
@@ -24,45 +31,59 @@ class TaskDetailsView extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: colors.backgroundColor,
         elevation: 0,
-        title: Text(
-          'Task Details',
-          style: textStyles.headingMedium,
-        ),
+        title: Text('Task Details', style: textStyles.headingMedium),
         actions: [
           IconButton(
             onPressed: () {
               getIt<NavigationService>().navigateToPage(
-                EditTaskView(taskId: '222'),
+                EditTaskView(task: task),
               );
             },
-            icon: Icon(
-              Icons.edit_outlined,
-              color: colors.iconColor,
-            ),
+            icon: Icon(Icons.edit_outlined, color: colors.iconColor),
           ),
-          PopupMenuButton(
-            icon: Icon(Icons.more_vert, color: colors.iconColor),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                onTap: () {
-                  // TODO: Duplicate task
-                },
-                child: Text('Duplicate'),
-              ),
-              PopupMenuItem(
-                onTap: () {
-                  // TODO: Share task
-                },
-                child: Text('Share'),
-              ),
-              PopupMenuItem(
-                onTap: () {
-                  // TODO: Delete task
-                },
-                child: Text('Delete'),
-              ),
-            ],
+          IconButton(
+            onPressed: () async {
+              var taskProvider = context.read<TaskProvider>();
+              var response = await getIt<DialogService>().showConfirmationDialog(
+                'Delete Task',
+                'Are you sure that you want to delete this Task?',
+              );
+
+              if (response != null && response) {
+                // perform delete
+                taskProvider.deleteTask(task.id!);
+                getIt<NavigationService>().goBack();
+                getIt<DialogService>().showSnackBar(
+                  'Task Deleted Successfully',
+                );
+              }
+            },
+            icon: Icon(Icons.delete_forever_outlined, color: colors.errorColor),
           ),
+
+          // PopupMenuButton(
+          //   icon: Icon(Icons.more_vert, color: colors.iconColor),
+          //   itemBuilder: (context) => [
+          //     PopupMenuItem(
+          //       onTap: () {
+          //         // TODO: Duplicate task
+          //       },
+          //       child: Text('Duplicate'),
+          //     ),
+          //     PopupMenuItem(
+          //       onTap: () {
+          //         // TODO: Share task
+          //       },
+          //       child: Text('Share'),
+          //     ),
+          //     PopupMenuItem(
+          //       onTap: () {
+          //         // TODO: Delete task
+          //       },
+          //       child: Text('Delete'),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
       body: SingleChildScrollView(
@@ -101,21 +122,26 @@ class TaskDetailsView extends StatelessWidget {
                       ),
                       SizedBox(width: 12.w),
                       Expanded(
-                        child: Text(
-                          'Sample Task Title',
-                          style: textStyles.titleLarge,
-                        ),
+                        child: Text(task.title, style: textStyles.titleLarge),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 4.h,
+                        ),
                         decoration: BoxDecoration(
                           color: colors.errorColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Text(
-                          'High',
+                          task.priority.name,
                           style: textStyles.captionMedium.copyWith(
-                            color: colors.errorColor,
+                            color:
+                                task.priority == TaskPriority.high
+                                    ? colors.errorColor
+                                    : task.priority == TaskPriority.medium
+                                    ? colors.warningColor
+                                    : colors.successColor,
                           ),
                         ),
                       ),
@@ -123,7 +149,7 @@ class TaskDetailsView extends StatelessWidget {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    'This is a sample task description that provides more details about what needs to be done.',
+                    task.description ?? '',
                     style: textStyles.bodyLarge,
                   ),
                 ],
@@ -144,29 +170,27 @@ class TaskDetailsView extends StatelessWidget {
                 children: [
                   _buildInfoRow(
                     context,
-                    'Project',
-                    'Mobile App Redesign',
+                    'Project', task.projectName!,
                     Icons.folder_outlined,
                   ),
                   SizedBox(height: 16.h),
                   _buildInfoRow(
                     context,
-                    'Due Date',
-                    'Today, 10:00 AM',
+                    'Due Date', DateFormat('dd/MM/yyyy hh:mm a').format(task.dueDate!),
                     Icons.schedule_outlined,
                   ),
                   SizedBox(height: 16.h),
                   _buildInfoRow(
                     context,
                     'Created',
-                    '2 days ago',
+                    '${task.createdAt.day} days ago',
                     Icons.calendar_today_outlined,
                   ),
                   SizedBox(height: 16.h),
                   _buildInfoRow(
                     context,
                     'Status',
-                    'In Progress',
+                    task.status.name,
                     Icons.play_circle_outline,
                   ),
                 ],
@@ -174,63 +198,60 @@ class TaskDetailsView extends StatelessWidget {
             ),
 
             SizedBox(height: 24.h),
-
-            // Actions
-            Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                color: colors.cardColor,
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: shadows.cardShadow,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Actions',
-                    style: textStyles.titleMedium,
-                  ),
-                  SizedBox(height: 16.h),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // TODO: Mark as complete/incomplete
-                          },
-                          icon: Icon(Icons.check_circle_outline),
-                          label: Text('Complete'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colors.successColor,
-                            foregroundColor: colors.backgroundColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            // TODO: Suggest new time with AI
-                          },
-                          icon: Icon(Icons.auto_awesome),
-                          label: Text('Reschedule'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: colors.primaryColor,
-                            side: BorderSide(color: colors.primaryColor),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            //
+            // // Actions
+            // Container(
+            //   padding: EdgeInsets.all(20.w),
+            //   decoration: BoxDecoration(
+            //     color: colors.cardColor,
+            //     borderRadius: BorderRadius.circular(16.r),
+            //     boxShadow: shadows.cardShadow,
+            //   ),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Text('Quick Actions', style: textStyles.titleMedium),
+            //       SizedBox(height: 16.h),
+            //       Row(
+            //         children: [
+            //           Expanded(
+            //             child: ElevatedButton.icon(
+            //               onPressed: () {
+            //                 // TODO: Mark as complete/incomplete
+            //               },
+            //               icon: Icon(Icons.check_circle_outline),
+            //               label: Text(task.status.name),
+            //               style: ElevatedButton.styleFrom(
+            //                 backgroundColor: task.status == TaskStatus.complete ? colors.successColor : colors.errorColor,
+            //                 foregroundColor: colors.backgroundColor,
+            //                 shape: RoundedRectangleBorder(
+            //                   borderRadius: BorderRadius.circular(8.r),
+            //                 ),
+            //               ),
+            //             ),
+            //           ),
+            //           // SizedBox(width: 12.w),
+            //           // Expanded(
+            //           //   child: OutlinedButton.icon(
+            //           //     onPressed: () {
+            //           //       // TODO: Suggest new time with AI
+            //           //     },
+            //           //     icon: Icon(Icons.auto_awesome),
+            //           //     label: Text('Reschedule'),
+            //           //     style: OutlinedButton.styleFrom(
+            //           //       foregroundColor: colors.primaryColor,
+            //           //       side: BorderSide(color: colors.primaryColor),
+            //           //       shape: RoundedRectangleBorder(
+            //           //         borderRadius: BorderRadius.circular(8.r),
+            //           //       ),
+            //           //     ),
+            //           //   ),
+            //           // ),
+            //         ],
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -238,33 +259,24 @@ class TaskDetailsView extends StatelessWidget {
   }
 
   Widget _buildInfoRow(
-      BuildContext context,
-      String label,
-      String value,
-      IconData icon,
-      ) {
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final textStyles = Theme.of(context).extension<AppTextStyles>()!;
 
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20.w,
-          color: colors.iconColor,
-        ),
+        Icon(icon, size: 20.w, color: colors.iconColor),
         SizedBox(width: 12.w),
         Text(
           label,
-          style: textStyles.bodyMedium.copyWith(
-            color: colors.subtitleColor,
-          ),
+          style: textStyles.bodyMedium.copyWith(color: colors.subtitleColor),
         ),
         const Spacer(),
-        Text(
-          value,
-          style: textStyles.bodyMedium,
-        ),
+        Text(value, style: textStyles.bodyMedium),
       ],
     );
   }

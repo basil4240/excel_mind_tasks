@@ -76,13 +76,17 @@ class AppInputDecorations extends ThemeExtension<AppInputDecorations> {
     required BuildContext context,
     Widget? prefixIcon,
     Widget? suffixIcon,
+    VoidCallback? onSearch,
   }) =>
       InputDecoration(
-          suffixIcon: suffixIcon,
-          prefixIcon: prefixIcon ?? Icon(
-            Icons.search,
-            color: brightness == Brightness.light ? kcLightSubtitleColor : kcDarkSubtitleColor,
+          suffixIcon: GestureDetector(
+            onTap: onSearch,
+            child: suffixIcon ?? Icon(
+              Icons.search,
+              color: brightness == Brightness.light ? kcLightSubtitleColor : kcDarkSubtitleColor,
+            ),
           ),
+          prefixIcon: prefixIcon,
           alignLabelWithHint: true,
           isDense: true,
           filled: true,

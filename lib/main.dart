@@ -1,4 +1,6 @@
 import 'package:excel_mind_tasks/presentation/providers/auth_provider.dart';
+import 'package:excel_mind_tasks/presentation/providers/project_provider.dart';
+import 'package:excel_mind_tasks/presentation/providers/task_provider.dart';
 import 'package:excel_mind_tasks/presentation/providers/theme_provider.dart';
 import 'package:excel_mind_tasks/presentation/theme/dark_theme.dart';
 import 'package:excel_mind_tasks/presentation/theme/light_theme.dart';
@@ -25,6 +27,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: getIt<AuthProvider>()),
         ChangeNotifierProvider.value(value: getIt<ThemeProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<ProjectProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<TaskProvider>()),
       ],
       child: ScreenUtilInit(
           designSize: const Size(375, 812),

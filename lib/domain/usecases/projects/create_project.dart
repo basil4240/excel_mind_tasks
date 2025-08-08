@@ -5,4 +5,12 @@ import '../../../core/types.dart';
 import '../../entities/project.dart';
 import '../../repositories/project_repository.dart';
 
-class CreateProjectUseCase {}
+class CreateProjectUseCase {
+  final ProjectRepository repository;
+
+  CreateProjectUseCase(this.repository);
+
+  Future<Either<Failure, Project>> call(Project project) async {
+    return await repository.create(project);
+  }
+}

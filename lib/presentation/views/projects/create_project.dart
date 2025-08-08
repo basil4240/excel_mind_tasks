@@ -1,13 +1,18 @@
+import 'package:excel_mind_tasks/domain/entities/project.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
+import '../../../core/services/dialog_service.dart';
+import '../../../core/services/navigation_service.dart';
+import '../../../dependency_injection.dart';
+import '../../providers/project_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/styles/app_input_decorations.dart';
 import '../../theme/styles/app_text_styles.dart';
 
 class CreateProjectView extends StatefulWidget {
-
-  const CreateProjectView({super.key,});
+  const CreateProjectView({super.key});
 
   @override
   State<CreateProjectView> createState() => _CreateProjectViewState();
@@ -16,8 +21,9 @@ class CreateProjectView extends StatefulWidget {
 class _CreateProjectViewState extends State<CreateProjectView> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  Color? _selectedColor;
-  String? _selectedStatus = 'Active';
+  String? _selectedColor;
+
+  // String? _selectedStatus = 'Active';
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
 
@@ -36,8 +42,32 @@ class _CreateProjectViewState extends State<CreateProjectView> {
         title: Text('Create Project', style: textStyles.headingMedium),
         actions: [
           TextButton(
-            onPressed: () {
-              // TODO: Save project
+            onPressed: () async {
+              var projectProvider = context.read<ProjectProvider>();
+              var response = await getIt<DialogService>()
+                  .showConfirmationDialog(
+                    'Create Project',
+                    'Are you sure that you want to create this project?',
+                  );
+
+              if (response != null && response) {
+                // perform delete
+                projectProvider.createProject(
+                  Project(
+                    name: _titleController.text,
+                    description: _descriptionController.text,
+                    color: _selectedColor,
+                    startedAt: _selectedStartDate,
+                    endedAt: _selectedEndDate,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
+                getIt<NavigationService>().goBack();
+                getIt<DialogService>().showSnackBar(
+                  'Project Created Successfully',
+                );
+              }
             },
             child: Text(
               'Create',
@@ -87,16 +117,20 @@ class _CreateProjectViewState extends State<CreateProjectView> {
               height: 50.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: _getProjectColors(context).length,
+                itemCount: _getProjectColors().length,
                 separatorBuilder: (context, index) => SizedBox(width: 12.w),
                 itemBuilder: (context, index) {
-                  final color = _getProjectColors(context)[index];
-                  final isSelected = _selectedColor == color;
+                  var colorString = _getProjectColors()[index].replaceFirst(
+                    '#',
+                    '0xFF',
+                  );
+                  final color = Color(int.parse(colorString));
+                  final isSelected = _selectedColor == colorString;
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        _selectedColor = color;
+                        _selectedColor = colorString;
                       });
                     },
                     child: Container(
@@ -127,26 +161,36 @@ class _CreateProjectViewState extends State<CreateProjectView> {
             SizedBox(height: 24.h),
 
             // Status Selection
-            Text('Status', style: textStyles.labelLarge),
-            SizedBox(height: 12.h),
-            Row(
-              children: [
-                _buildStatusChip('Active', colors.successColor),
-                SizedBox(width: 12.w),
-                _buildStatusChip('On Hold', colors.warningColor),
-                SizedBox(width: 12.w),
-                _buildStatusChip('Completed', colors.primaryColor),
-              ],
-            ),
-
+            // Text('Status', style: textStyles.labelLarge),
+            // SizedBox(height: 12.h),
+            // Row(
+            //   children: [
+            //     _buildStatusChip('Active', colors.successColor),
+            //     SizedBox(width: 12.w),
+            //     _buildStatusChip('On Hold', colors.warningColor),
+            //     SizedBox(width: 12.w),
+            //     _buildStatusChip('Completed', colors.primaryColor),
+            //   ],
+            // ),
             SizedBox(height: 24.h),
 
             // Start Date
             Text('Start Date', style: textStyles.labelLarge),
             SizedBox(height: 8.h),
             GestureDetector(
-              onTap: () {
-                // TODO: Show date picker for start date
+              onTap: () async {
+                final DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedStartDate ?? DateTime.now(),
+                  firstDate: DateTime(2000), // earliest date allowed
+                  lastDate: DateTime(2100), // latest date allowed
+                );
+
+                if (pickedDate != null && pickedDate != _selectedStartDate) {
+                  setState(() {
+                    _selectedStartDate = pickedDate;
+                  });
+                }
               },
               child: AbsorbPointer(
                 child: TextField(
@@ -167,8 +211,19 @@ class _CreateProjectViewState extends State<CreateProjectView> {
             Text('End Date (Optional)', style: textStyles.labelLarge),
             SizedBox(height: 8.h),
             GestureDetector(
-              onTap: () {
-                // TODO: Show date picker for end date
+              onTap: () async {
+                final DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedEndDate ?? DateTime.now(),
+                  firstDate: DateTime(2000), // earliest date allowed
+                  lastDate: DateTime(2100), // latest date allowed
+                );
+
+                if (pickedDate != null && pickedDate != _selectedEndDate) {
+                  setState(() {
+                    _selectedEndDate = pickedDate;
+                  });
+                }
               },
               child: AbsorbPointer(
                 child: TextField(
@@ -188,43 +243,35 @@ class _CreateProjectViewState extends State<CreateProjectView> {
     );
   }
 
-  Widget _buildStatusChip(String status, Color color) {
-    final colors = Theme.of(context).extension<AppColors>()!;
-    final textStyles = Theme.of(context).extension<AppTextStyles>()!;
-    final isSelected = _selectedStatus == status;
+  // Widget _buildStatusChip(String status, Color color) {
+  //   final colors = Theme.of(context).extension<AppColors>()!;
+  //   final textStyles = Theme.of(context).extension<AppTextStyles>()!;
+  //   final isSelected = _selectedStatus == status;
+  //
+  //   return GestureDetector(
+  //     onTap: () {
+  //       setState(() {
+  //         _selectedStatus = status;
+  //       });
+  //     },
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+  //       decoration: BoxDecoration(
+  //         color: isSelected ? color.withOpacity(0.2) : colors.surfaceColor,
+  //         borderRadius: BorderRadius.circular(20.r),
+  //         border: Border.all(color: isSelected ? color : colors.borderColor),
+  //       ),
+  //       child: Text(
+  //         status,
+  //         style: textStyles.labelSmall.copyWith(
+  //           color: isSelected ? color : colors.textColor,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedStatus = status;
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.2) : colors.surfaceColor,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: isSelected ? color : colors.borderColor),
-        ),
-        child: Text(
-          status,
-          style: textStyles.labelSmall.copyWith(
-            color: isSelected ? color : colors.textColor,
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Color> _getProjectColors(BuildContext context) {
-    final colors = Theme.of(context).extension<AppColors>()!;
-    return [
-      colors.primaryColor,
-      colors.successColor,
-      colors.warningColor,
-      colors.errorColor,
-      colors.accentColor,
-      colors.infoColor,
-    ];
+  List<String> _getProjectColors() {
+    return ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
   }
 }

@@ -1,10 +1,8 @@
 import 'package:excel_mind_tasks/core/services/dialog_service.dart';
 import 'package:excel_mind_tasks/core/services/navigation_service.dart';
-import 'package:excel_mind_tasks/presentation/views/auth/login_view.dart';
 import 'package:excel_mind_tasks/presentation/views/profile/edit_profile_view.dart';
 import 'package:excel_mind_tasks/presentation/views/profile/security_view.dart';
 import 'package:excel_mind_tasks/presentation/views/profile/settings_view.dart';
-import 'package:excel_mind_tasks/presentation/views/projects/edit_project.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -64,10 +62,10 @@ class ProfileView extends StatelessWidget {
                     SizedBox(height: 16.h),
 
                     // Name and Email
-                    Text('John Doe', style: textStyles.headingSmall),
+                    Text(getIt<AuthProvider>().userPersistingModel?.name ?? '', style: textStyles.headingSmall),
                     SizedBox(height: 4.h),
                     Text(
-                      'john.doe@example.com',
+                      getIt<AuthProvider>().userPersistingModel?.email ?? '',
                       style: textStyles.bodyMedium.copyWith(
                         color: colors.subtitleColor,
                       ),

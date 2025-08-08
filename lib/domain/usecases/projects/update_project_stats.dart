@@ -3,12 +3,12 @@ import 'package:dartz/dartz.dart';
 import '../../../core/errors/failures.dart';
 import '../../repositories/project_repository.dart';
 
-class DeleteProjectUseCase {
+class UpdateProjectStatsUseCase {
   final ProjectRepository repository;
 
-  DeleteProjectUseCase(this.repository);
+  UpdateProjectStatsUseCase(this.repository);
 
   Future<Either<Failure, void>> call(int id) async {
-    return await repository.delete(id);
+    return await repository.updateProjectStats(id);
   }
 }

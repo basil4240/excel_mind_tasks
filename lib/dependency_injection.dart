@@ -1,3 +1,5 @@
+import 'package:excel_mind_tasks/presentation/providers/project_provider.dart';
+import 'package:excel_mind_tasks/presentation/providers/task_provider.dart';
 import 'package:excel_mind_tasks/presentation/providers/theme_provider.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
@@ -8,23 +10,27 @@ import 'core/network/api_client.dart';
 import 'core/services/navigation_service.dart';
 import 'core/services/dialog_service.dart';
 import 'core/services/storage_service.dart';
-
-// import 'data/datasources/local/todo_local_datasource.dart';
-// import 'data/datasources/remote/auth_remote_datasource.dart';
-// import 'data/datasources/remote/todo_remote_datasource.dart';
+import 'data/datasources/local/database_helper.dart';
+import 'data/datasources/local/project_local_data_source.dart';
+import 'data/datasources/local/task_local_data_source.dart';
 import 'data/datasources/remote/auth_remote_data_source.dart';
 import 'data/repositories/auth_repository_impl.dart';
-// import 'data/repositories/todo_repository_impl.dart';
-
+import 'data/repositories/project_repository_impl.dart';
+import 'data/repositories/task_repository_impl.dart';
 import 'domain/repositories/auth_repository.dart';
-// import 'domain/repositories/todo_repository.dart';
-// import 'domain/usecases/auth/login_usecase.dart';
-// import 'domain/usecases/auth/register_usecase.dart';
-// import 'domain/usecases/todo/get_todos_usecase.dart';
-// import 'domain/usecases/todo/create_todo_usecase.dart';
-// import 'domain/usecases/todo/update_todo_usecase.dart';
-
+import 'domain/repositories/project_repository.dart';
+import 'domain/repositories/task_repository.dart';
 import 'domain/usecases/authenticate_user.dart';
+import 'domain/usecases/projects/create_project.dart';
+import 'domain/usecases/projects/delete_project.dart';
+import 'domain/usecases/projects/get_projects.dart';
+import 'domain/usecases/projects/search_projects.dart';
+import 'domain/usecases/projects/update_project.dart';
+import 'domain/usecases/tasks/create_task.dart';
+import 'domain/usecases/tasks/delete_task.dart';
+import 'domain/usecases/tasks/get_tasks.dart';
+import 'domain/usecases/tasks/search_tasks.dart';
+import 'domain/usecases/tasks/update_task.dart';
 import 'presentation/providers/auth_provider.dart';
 
 final getIt = GetIt.instance;
@@ -32,13 +38,17 @@ final getIt = GetIt.instance;
 Future<void> setupDependencies() async {
   // External
   final sharedPreferences = await SharedPreferences.getInstance();
-  final database = await openDatabase('todo_database.db', version: 1);
+  final database = await openDatabase('todo_app.db', version: 1);
 
   getIt.registerLazySingleton(() => sharedPreferences);
   getIt.registerLazySingleton(() => database);
   getIt.registerLazySingleton(() => Dio());
 
   // Core
+  final dbHelper = DatabaseHelper();
+  await dbHelper.seedDatabaseManually();
+  // await dbHelper.clearAndReseed();
+  getIt.registerLazySingleton(() => dbHelper);
   getIt.registerLazySingleton(() => ApiClient(getIt()));
   getIt.registerLazySingleton(() => NavigationService());
   getIt.registerLazySingleton(() => DialogService());
@@ -46,54 +56,71 @@ Future<void> setupDependencies() async {
 
   // Data sources
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-        () => AuthRemoteDataSourceImpl(getIt(), getIt()),
+    () => AuthRemoteDataSourceImpl(getIt(), getIt()),
   );
-  // getIt.registerLazySingleton<TodoRemoteDataSource>(
-  //       () => TodoRemoteDataSourceImpl(getIt()),
-  // );
-  // getIt.registerLazySingleton<TodoLocalDataSource>(
-  //       () => TodoLocalDataSourceImpl(getIt()),
-  // );
+  getIt.registerLazySingleton<ProjectLocalDataSource>(
+    () => ProjectLocalDataSourceImpl(getIt()),
+  );
+  getIt.registerLazySingleton<TaskLocalDataSource>(
+    () => TaskLocalDataSourceImpl(getIt()),
+  );
 
   // Repositories
   getIt.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(getIt(), getIt()),
+    () => AuthRepositoryImpl(getIt(), getIt()),
   );
-  // getIt.registerLazySingleton<TodoRepository>(
-  //       () => TodoRepositoryImpl(getIt(), getIt()),
-  // );
+  getIt.registerLazySingleton<ProjectRepository>(
+    () => ProjectRepositoryImpl(getIt()),
+  );
+  getIt.registerLazySingleton<TaskRepository>(
+    () => TaskRepositoryImpl(getIt()),
+  );
 
-  // Use cases
+  // Use cases - Auth
   getIt.registerLazySingleton(() => LoginUseCase(getIt()));
   getIt.registerLazySingleton(() => RegisterUseCase(getIt()));
-  // getIt.registerLazySingleton(() => GetTodosUseCase(getIt()));
-  // getIt.registerLazySingleton(() => CreateTodoUseCase(getIt()));
-  // getIt.registerLazySingleton(() => UpdateTodoUseCase(getIt()));
+
+  // Use cases - Projects
+  getIt.registerLazySingleton(() => CreateProjectUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetProjectsUseCase(getIt()));
+  getIt.registerLazySingleton(() => SearchProjectsUseCase(getIt()));
+  getIt.registerLazySingleton(() => UpdateProjectUseCase(getIt()));
+  getIt.registerLazySingleton(() => DeleteProjectUseCase(getIt()));
+
+  // Use cases - Tasks
+  getIt.registerLazySingleton(() => CreateTaskUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetTasksUseCase(getIt()));
+  getIt.registerLazySingleton(() => SearchTasksUseCase(getIt()));
+  getIt.registerLazySingleton(() => UpdateTaskUseCase(getIt()));
+  getIt.registerLazySingleton(() => DeleteTaskUseCase(getIt()));
 
   // Providers
-  getIt.registerLazySingleton<AuthProvider>(() => AuthProvider(
-    loginUseCase: getIt(),
-    registerUseCase: getIt(),
-    navigationService: getIt(),
-    dialogService: getIt(),
-    storageService: getIt(),
-  ));
-  // getIt.registerFactory(() => AuthProvider(
-  //   // loginUseCase: getIt(),
-  //   // registerUseCase: getIt(),
-  //   navigationService: getIt(),
-  //   dialogService: getIt(),
-  //   storageService: getIt(),
-  // ));
-
-  // getIt.registerFactory(() => TodoProvider(
-  //   getTodosUseCase: getIt(),
-  //   createTodoUseCase: getIt(),
-  //   updateTodoUseCase: getIt(),
-  //   dialogService: getIt(),
-  // ));
-
+  getIt.registerLazySingleton<AuthProvider>(
+    () => AuthProvider(
+      loginUseCase: getIt(),
+      registerUseCase: getIt(),
+      navigationService: getIt(),
+      dialogService: getIt(),
+      storageService: getIt(),
+    ),
+  );
   getIt.registerLazySingleton(() => ThemeProvider());
-  // getIt.registerFactory(() => ThemeProvider());
-
+  getIt.registerFactory(
+    () => ProjectProvider(
+      createProjectUseCase: getIt(),
+      getProjectsUseCase: getIt(),
+      searchProjectsUseCase: getIt(),
+      updateProjectUseCase: getIt(),
+      deleteProjectUseCase: getIt(),
+    ),
+  );
+  getIt.registerFactory(
+    () => TaskProvider(
+      createTaskUseCase: getIt(),
+      getTasksUseCase: getIt(),
+      searchTasksUseCase: getIt(),
+      updateTaskUseCase: getIt(),
+      deleteTaskUseCase: getIt(),
+    ),
+  );
 }

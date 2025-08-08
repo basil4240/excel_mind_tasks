@@ -1,6 +1,9 @@
+import 'package:excel_mind_tasks/dependency_injection.dart';
+import 'package:excel_mind_tasks/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/utils/greetings.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/styles/app_box_shadows.dart';
 import '../../theme/styles/app_text_styles.dart';
@@ -30,12 +33,12 @@ class HomeView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Good Morning',
+                        getGreeting,
                         style: textStyles.subtitleLarge,
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        'John Doe',
+                        getIt<AuthProvider>().userPersistingModel?.name ?? 'John',
                         style: textStyles.headingMedium,
                       ),
                     ],
@@ -112,175 +115,175 @@ class HomeView extends StatelessWidget {
               SizedBox(height: 32.h),
 
               // Today's Tasks
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Today\'s Tasks',
-                    style: textStyles.titleLarge,
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'View All',
-                      style: textStyles.labelMedium.copyWith(
-                        color: colors.primaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 16.h),
-
-              // Task Items
-              _buildTaskItem(
-                context,
-                'Review project proposal',
-                'Marketing Project',
-                '10:00 AM',
-                false,
-                'High',
-              ),
-
-              SizedBox(height: 12.h),
-
-              _buildTaskItem(
-                context,
-                'Team meeting',
-                'Development Team',
-                '2:00 PM',
-                false,
-                'Medium',
-              ),
-
-              SizedBox(height: 12.h),
-
-              _buildTaskItem(
-                context,
-                'Update documentation',
-                'Personal',
-                '4:30 PM',
-                true,
-                'Low',
-              ),
-
-              SizedBox(height: 32.h),
-
-              // Recent Projects
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Projects',
-                    style: textStyles.titleLarge,
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'View All',
-                      style: textStyles.labelMedium.copyWith(
-                        color: colors.primaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 16.h),
-
-              // Project Cards
-              _buildProjectCard(
-                context,
-                'Mobile App Redesign',
-                '8/12 tasks completed',
-                0.67,
-                colors.primaryColor,
-              ),
-
-              SizedBox(height: 12.h),
-
-              _buildProjectCard(
-                context,
-                'Marketing Campaign',
-                '3/8 tasks completed',
-                0.37,
-                colors.warningColor,
-              ),
-
-              SizedBox(height: 12.h),
-
-              _buildProjectCard(
-                context,
-                'Website Development',
-                '15/15 tasks completed',
-                1.0,
-                colors.successColor,
-              ),
-
-              SizedBox(height: 32.h),
-
-              // AI Assistant Quick Access
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colors.primaryColor.withOpacity(0.1),
-                      colors.accentColor.withOpacity(0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: colors.primaryColor.withOpacity(0.2),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.auto_awesome,
-                          color: colors.primaryColor,
-                          size: 24.w,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'AI Assistant',
-                          style: textStyles.titleMedium.copyWith(
-                            color: colors.primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Let AI help you plan your tasks and optimize your workflow',
-                      style: textStyles.bodyMedium,
-                    ),
-                    SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primaryColor,
-                        foregroundColor: colors.backgroundColor,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Try AI Assistant',
-                        style: textStyles.buttonMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text(
+              //       'Today\'s Tasks',
+              //       style: textStyles.titleLarge,
+              //     ),
+              //     TextButton(
+              //       onPressed: () {},
+              //       child: Text(
+              //         'View All',
+              //         style: textStyles.labelMedium.copyWith(
+              //           color: colors.primaryColor,
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              //
+              // SizedBox(height: 16.h),
+              //
+              // // Task Items
+              // _buildTaskItem(
+              //   context,
+              //   'Review project proposal',
+              //   'Marketing Project',
+              //   '10:00 AM',
+              //   false,
+              //   'High',
+              // ),
+              //
+              // SizedBox(height: 12.h),
+              //
+              // _buildTaskItem(
+              //   context,
+              //   'Team meeting',
+              //   'Development Team',
+              //   '2:00 PM',
+              //   false,
+              //   'Medium',
+              // ),
+              //
+              // SizedBox(height: 12.h),
+              //
+              // _buildTaskItem(
+              //   context,
+              //   'Update documentation',
+              //   'Personal',
+              //   '4:30 PM',
+              //   true,
+              //   'Low',
+              // ),
+              //
+              // SizedBox(height: 32.h),
+              //
+              // // Recent Projects
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text(
+              //       'Recent Projects',
+              //       style: textStyles.titleLarge,
+              //     ),
+              //     TextButton(
+              //       onPressed: () {},
+              //       child: Text(
+              //         'View All',
+              //         style: textStyles.labelMedium.copyWith(
+              //           color: colors.primaryColor,
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              //
+              // SizedBox(height: 16.h),
+              //
+              // // Project Cards
+              // _buildProjectCard(
+              //   context,
+              //   'Mobile App Redesign',
+              //   '8/12 tasks completed',
+              //   0.67,
+              //   colors.primaryColor,
+              // ),
+              //
+              // SizedBox(height: 12.h),
+              //
+              // _buildProjectCard(
+              //   context,
+              //   'Marketing Campaign',
+              //   '3/8 tasks completed',
+              //   0.37,
+              //   colors.warningColor,
+              // ),
+              //
+              // SizedBox(height: 12.h),
+              //
+              // _buildProjectCard(
+              //   context,
+              //   'Website Development',
+              //   '15/15 tasks completed',
+              //   1.0,
+              //   colors.successColor,
+              // ),
+              //
+              // SizedBox(height: 32.h),
+              //
+              // // AI Assistant Quick Access
+              // Container(
+              //   width: double.infinity,
+              //   padding: EdgeInsets.all(20.w),
+              //   decoration: BoxDecoration(
+              //     gradient: LinearGradient(
+              //       begin: Alignment.topLeft,
+              //       end: Alignment.bottomRight,
+              //       colors: [
+              //         colors.primaryColor.withOpacity(0.1),
+              //         colors.accentColor.withOpacity(0.1),
+              //       ],
+              //     ),
+              //     borderRadius: BorderRadius.circular(16.r),
+              //     border: Border.all(
+              //       color: colors.primaryColor.withOpacity(0.2),
+              //     ),
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       Row(
+              //         children: [
+              //           Icon(
+              //             Icons.auto_awesome,
+              //             color: colors.primaryColor,
+              //             size: 24.w,
+              //           ),
+              //           SizedBox(width: 8.w),
+              //           Text(
+              //             'AI Assistant',
+              //             style: textStyles.titleMedium.copyWith(
+              //               color: colors.primaryColor,
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //       SizedBox(height: 8.h),
+              //       Text(
+              //         'Let AI help you plan your tasks and optimize your workflow',
+              //         style: textStyles.bodyMedium,
+              //       ),
+              //       SizedBox(height: 16.h),
+              //       ElevatedButton(
+              //         onPressed: () {},
+              //         style: ElevatedButton.styleFrom(
+              //           backgroundColor: colors.primaryColor,
+              //           foregroundColor: colors.backgroundColor,
+              //           elevation: 0,
+              //           shape: RoundedRectangleBorder(
+              //             borderRadius: BorderRadius.circular(8.r),
+              //           ),
+              //         ),
+              //         child: Text(
+              //           'Try AI Assistant',
+              //           style: textStyles.buttonMedium,
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),

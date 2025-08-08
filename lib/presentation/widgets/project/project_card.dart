@@ -14,7 +14,7 @@ class ProjectCard extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const ProjectCard({
+  const ProjectCard({super.key,
     required this.title,
     required this.description,
     required this.tasksCount,
@@ -76,7 +76,7 @@ class ProjectCard extends StatelessWidget {
             Text(
               description,
               style: textStyles.bodySmall,
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
 

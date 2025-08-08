@@ -62,6 +62,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       email: email,
       name: name,
       password: password,
+      phone: '',
+      bio: '',
+      isDark: false
     );
 
     await storageService.saveUser(email, userPersistingModel);
